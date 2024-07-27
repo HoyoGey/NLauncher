@@ -1,13 +1,9 @@
-import { ModeToggle } from "@/components/mode-toggle"
+// its making just wait ill make rn only front of program
 
 export default function Dashboard() {
     return (
         <>
-        <div className="bg-slate-600">
-        test
-        </div>
-            
-            <ModeToggle/>
+        
         </>
     )
 }
