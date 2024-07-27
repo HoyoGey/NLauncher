@@ -1,31 +1,33 @@
-import { createContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+
+type Theme = "dark" | "light" | "system"
 
 type ThemeProviderProps = {
     children: React.ReactNode
-    defaultTheme?: string
+    defaultTheme?: Theme
     storageKey?: string
 }
 
-export type ThemeProviderState = {
-    theme: string
-    setTheme: (theme: string) => void
+type ThemeProviderState = {
+    theme: Theme
+    setTheme: (theme: Theme) => void
 }
 
-const initialState = {
+const initialState: ThemeProviderState = {
     theme: "system",
     setTheme: () => null,
 }
 
-export const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
     children,
     defaultTheme = "system",
-    storageKey = "shadcn-ui-theme",
+    storageKey = "vite-ui-theme",
     ...props
 }: ThemeProviderProps) {
-    const [theme, setTheme] = useState(
-        () => localStorage.getItem(storageKey) ?? defaultTheme
+    const [theme, setTheme] = useState<Theme>(
+        () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
     )
 
     useEffect(() => {
@@ -46,15 +48,26 @@ export function ThemeProvider({
         root.classList.add(theme)
     }, [theme])
 
+    const value = {
+        theme,
+        setTheme: (theme: Theme) => {
+            localStorage.setItem(storageKey, theme)
+            setTheme(theme)
+        },
+    }
+
     return (
-        <ThemeProviderContext.Provider {...props} value={{
-            theme,
-            setTheme: (theme: string) => {
-                localStorage.setItem(storageKey, theme)
-                setTheme(theme)
-            },
-        }}>
+        <ThemeProviderContext.Provider {...props} value={value}>
             {children}
         </ThemeProviderContext.Provider>
     )
+}
+
+export const useTheme = () => {
+    const context = useContext(ThemeProviderContext)
+
+    if (context === undefined)
+        throw new Error("useTheme must be used within a ThemeProvider")
+
+    return context
 }
